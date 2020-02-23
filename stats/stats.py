@@ -1,6 +1,6 @@
 import concurrent.futures
 import functools
-from datetime import datetime
+from datetime import datetime, timedelta
 import asyncio
 import locale
 from dateutil.relativedelta import relativedelta
@@ -25,6 +25,8 @@ class Stats(commands.Cog):
             'CREATE TABLE IF NOT EXISTS member_stats ('
             'user_id INTEGER NOT NULL,'
             'message_quantity INTEGER DEFAULT 1,'
+            'voice_time INTEGER DEFAULT 1,'
+            'joined_voice_time INTEGER DEFAULT 1,'
             'PRIMARY KEY (user_id)'
             ');'
         )
@@ -46,17 +48,10 @@ class Stats(commands.Cog):
             await ctx.send(embed=em)
 
     @commands.command(pass_context=True)
-    async def stats_dev(self, ctx):
+    async def stats_admin(self, ctx):
         """Affiche les statistiques d'un utilisateur"""
         users = ctx.message.mentions
         for k in users:
-            em = discord.Embed(description='Stats of <@' + str(k.id) +'>', colour=0x00ff40)
-            em.set_thumbnail(url=k.avatar_url)
-            em.add_field(name='Nom', value=k.nick, inline=True)
-            em.add_field(name='Status', value=k.status, inline=True)
-            em.add_field(name="Date de création du compte", value=k.created_at.__format__('%A %d %B %Y à %H:%M:%S'))
-            em.add_field(name="Date d'arrivée sur le serveur", value=k.joined_at.__format__('%A %d %B %Y à %H:%M:%S'))
-            await ctx.send(embed=em)
             result = self.cursor.execute(
                 'SELECT message_quantity, voice_time FROM member_stats '
                 'WHERE user_id = ?',
@@ -64,8 +59,16 @@ class Stats(commands.Cog):
             ).fetchall()
             if not result:
                 return await ctx.send('This user have no stats yet')
-            await ctx.send(result[0][0])
-            await ctx.send(result[0][1])
+            em = discord.Embed(description='Stats of <@' + str(k.id) +'>', colour=0x00ff40)
+            em.set_thumbnail(url=k.avatar_url)
+            em.add_field(name='Nom', value=k.nick, inline=True)
+            em.add_field(name='Status', value=k.status, inline=True)
+            em.add_field(name="Date de création du compte", value=k.created_at.__format__('%A %d %B %Y à %H:%M:%S'))
+            em.add_field(name="Date d'arrivée sur le serveur", value=k.joined_at.__format__('%A %d %B %Y à %H:%M:%S'), inline=False)
+            em.add_field(name="Messages envoyés", value=result[0][0], inline=True)
+            em.add_field(name="Temps passé en vocal", value=timedelta(seconds=result[0][1]), inline=True)
+            
+            await ctx.send(embed=em)
 
     def cog_unload(self):
         self._executor.shutdown()
@@ -119,7 +122,7 @@ class Stats(commands.Cog):
                 await self.bot.loop.run_in_executor(self._executor, task)
             elif not (before.channel is None) and (after.channel is None):
                 result = self.cursor.execute(
-                    'SELECT joined_voice_time FROM member_stats'
+                    'SELECT joined_voice_time FROM member_stats '
                     'WHERE user_id = ?',
                     [member.id]
                 ).fetchall()
@@ -129,9 +132,10 @@ class Stats(commands.Cog):
                 query = (
                     'INSERT INTO member_stats (user_id, message_quantity, voice_time, joined_voice_time)'
                     'VALUES (?, 0, ?, 0)'
-                    'ON CONFLICT(user_id) DO UPDATE SET joined_voice_time = ?;'
+                    'ON CONFLICT(user_id) DO UPDATE SET voice_time = message_quantity + ?;'
                 )
                 now = datetime.now()
-                data = [member.id, (now-joined_voice_time).total_seconds(), (now-joined_voice_time).total_seconds()]
+                time = round((now-joined_voice_time).total_seconds())
+                data = [member.id, time, time]
                 task = functools.partial(self.safe_write, query, data)
                 await self.bot.loop.run_in_executor(self._executor, task)
