@@ -1,0 +1,103 @@
+import concurrent.futures
+import functools
+from datetime import datetime
+import asyncio
+import locale
+from dateutil.relativedelta import relativedelta
+from redbot.core import Config, commands
+from redbot.core.data_manager import cog_data_path
+import discord
+import apsw
+
+locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
+
+class Stats(commands.Cog):
+    """Stats"""
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.config = Config.get_conf(self, 15646546161512)
+        self._connection = apsw.Connection(str(cog_data_path(self) / 'stats.db'))
+        self.cursor = self._connection.cursor()
+        self.cursor.execute('PRAGMA journal_mode = wal;')
+        self.cursor.execute('PRAGMA read_uncommitted = 1;')
+        self.cursor.execute(
+            'CREATE TABLE IF NOT EXISTS member_stats ('
+            'user_id INTEGER NOT NULL,'
+            'message_quantity INTEGER DEFAULT 1,'
+            'PRIMARY KEY (user_id)'
+            ');'
+        )
+        self._executor = concurrent.futures.ThreadPoolExecutor(1)
+        self.time = int(((datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1))-datetime.now()).total_seconds())
+        self.task = self.bot.loop.create_task(self.cleanup_db())
+
+    @commands.command(pass_context=True)
+    async def stats(self, ctx):
+        """Affiche les statistiques d'un utilisateur"""
+        users = ctx.message.mentions
+        for k in users:
+            em = discord.Embed(description='Stats of <@' + str(k.id) +'>', colour=0x00ff40)
+            em.set_thumbnail(url=k.avatar_url)
+            em.add_field(name='Nom', value=k.nick, inline=True)
+            em.add_field(name='Status', value=k.status, inline=True)
+            em.add_field(name="Date de création du compte", value=k.created_at.__format__('%A %d %B %Y à %H:%M:%S'))
+            em.add_field(name="Date d'arrivée sur le serveur", value=k.joined_at.__format__('%A %d %B %Y à %H:%M:%S'))
+            await ctx.send(embed=em)
+
+    @commands.command(pass_context=True)
+    async def stats_dev(self, ctx):
+        """Affiche les statistiques d'un utilisateur"""
+        users = ctx.message.mentions
+        for k in users:
+            em = discord.Embed(description='Stats of <@' + str(k.id) +'>', colour=0x00ff40)
+            em.set_thumbnail(url=k.avatar_url)
+            em.add_field(name='Nom', value=k.nick, inline=True)
+            em.add_field(name='Status', value=k.status, inline=True)
+            em.add_field(name="Date de création du compte", value=k.created_at.__format__('%A %d %B %Y à %H:%M:%S'))
+            em.add_field(name="Date d'arrivée sur le serveur", value=k.joined_at.__format__('%A %d %B %Y à %H:%M:%S'))
+            await ctx.send(embed=em)
+            result = self.cursor.execute(
+                'SELECT message_quantity FROM member_stats '
+                f'WHERE user_id = ?',
+                [k.id]
+            ).fetchall()
+            if not result:
+                return await ctx.send('This user have no stats yet')
+            await ctx.send(result[0][0])
+
+    def cog_unload(self):
+        self._executor.shutdown()
+        if self.task:
+            self.task.cancel()
+
+    async def cleanup_db(self):
+        """Loop task that sends reminders."""
+        await self.bot.wait_until_ready()
+        while self.bot.get_cog("Stats") == self:
+            await asyncio.sleep(self.time)
+            self.time = int(((datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1))-datetime.now()).total_seconds())
+            query = (
+                'DELETE FROM member_stats'
+            )
+            data = []
+            task = functools.partial(self.safe_write, query, data)
+            await self.bot.loop.run_in_executor(self._executor, task)
+
+    def safe_write(self, query, data):
+        """Func for safely writing in another thread."""
+        cursor = self._connection.cursor()
+        cursor.execute(query, data)
+
+    @commands.Cog.listener()
+    async def on_message_without_command(self, msg):
+        """Passively records all message contents."""
+        if not msg.author.bot and isinstance(msg.channel, discord.TextChannel):
+            query = (
+                'INSERT INTO member_stats (user_id)'
+                'VALUES (?)'
+                'ON CONFLICT(user_id) DO UPDATE SET message_quantity = message_quantity + 1;'
+            )
+            data = [msg.author.id]
+            task = functools.partial(self.safe_write, query, data)
+            await self.bot.loop.run_in_executor(self._executor, task)
