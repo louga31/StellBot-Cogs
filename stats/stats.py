@@ -25,8 +25,6 @@ class Stats(commands.Cog):
             'CREATE TABLE IF NOT EXISTS member_stats ('
             'user_id INTEGER NOT NULL,'
             'message_quantity INTEGER DEFAULT 1,'
-            'voice_time INTEGER DEFAULT 1,'
-            'joined_voice_time INTEGER DEFAULT 1,'
             'PRIMARY KEY (user_id)'
             ');'
         )
