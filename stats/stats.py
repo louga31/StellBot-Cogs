@@ -25,6 +25,8 @@ class Stats(commands.Cog):
             'CREATE TABLE IF NOT EXISTS member_stats ('
             'user_id INTEGER NOT NULL,'
             'message_quantity INTEGER DEFAULT 1,'
+            'voice_time INTEGER DEFAULT 1,'
+            'joined_voice_time INTEGER DEFAULT 1,'
             'PRIMARY KEY (user_id)'
             ');'
         )
@@ -58,13 +60,14 @@ class Stats(commands.Cog):
             em.add_field(name="Date d'arrivée sur le serveur", value=k.joined_at.__format__('%A %d %B %Y à %H:%M:%S'))
             await ctx.send(embed=em)
             result = self.cursor.execute(
-                'SELECT message_quantity FROM member_stats '
-                f'WHERE user_id = ?',
+                'SELECT message_quantity, voice_time FROM member_stats'
+                'WHERE user_id = ?',
                 [k.id]
             ).fetchall()
             if not result:
                 return await ctx.send('This user have no stats yet')
             await ctx.send(result[0][0])
+            await ctx.send(result[0][1])
 
     def cog_unload(self):
         self._executor.shutdown()
@@ -94,10 +97,43 @@ class Stats(commands.Cog):
         """Passively records all message contents."""
         if not msg.author.bot and isinstance(msg.channel, discord.TextChannel):
             query = (
-                'INSERT INTO member_stats (user_id)'
-                'VALUES (?)'
+                'INSERT INTO member_stats (user_id, voice_time, joined_voice_time)'
+                'VALUES (?, 0, 0)'
                 'ON CONFLICT(user_id) DO UPDATE SET message_quantity = message_quantity + 1;'
             )
             data = [msg.author.id]
             task = functools.partial(self.safe_write, query, data)
             await self.bot.loop.run_in_executor(self._executor, task)
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        """Passively records all voice activity."""
+        if not member.bot:
+            if (before.channel is None) and not (after.channel is None):
+                query = (
+                    'INSERT INTO member_stats (user_id, message_quantity, joined_voice_time)'
+                    'VALUES (?, 0, ?)'
+                    'ON CONFLICT(user_id) DO UPDATE SET joined_voice_time = ?;'
+                )
+                now = datetime.now()
+                data = [member.id, datetime.timestamp(now), datetime.timestamp(now)]
+                task = functools.partial(self.safe_write, query, data)
+                await self.bot.loop.run_in_executor(self._executor, task)
+            elif not (before.channel is None) and (after.channel is None):
+                result = self.cursor.execute(
+                    'SELECT joined_voice_time FROM member_stats'
+                    'WHERE user_id = ?',
+                    [member.id]
+                ).fetchall()
+                if not result or result[0][0] == 0:
+                    return
+                joined_voice_time = datetime.fromtimestamp(result[0][0])
+                query = (
+                    'INSERT INTO member_stats (user_id, message_quantity, voice_time, joined_voice_time)'
+                    'VALUES (?, 0, ?, 0)'
+                    'ON CONFLICT(user_id) DO UPDATE SET joined_voice_time = ?;'
+                )
+                now = datetime.now()
+                data = [member.id, (now-joined_voice_time).total_seconds(), (now-joined_voice_time).total_seconds()]
+                task = functools.partial(self.safe_write, query, data)
+                await self.bot.loop.run_in_executor(self._executor, task)
