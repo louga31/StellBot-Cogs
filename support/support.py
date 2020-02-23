@@ -1,26 +1,11 @@
-import discord
-from redbot.core import commands, checks, Config
-from redbot.core.i18n import Translator, cog_i18n
-from redbot.core.bot import RedBase
-import random
-import string
-import aiohttp
 import asyncio
-import base64
-import datetime
-import math
-from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
-from redbot.core.utils.menus import (
-    menu,
-    DEFAULT_CONTROLS,
-    prev_page,
-    next_page,
-    close_menu,
-    start_adding_reactions,
-)
 import locale
 import subprocess
 import os
+import discord
+from redbot.core import commands, Config
+from redbot.core.bot import RedBase
+from redbot.core.data_manager import cog_data_path
 
 locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
 
@@ -36,6 +21,7 @@ class Support(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, 15465415464689)
+        self.token = open(str(cog_data_path(self) / 'token.txt'), "r").read()
         asyncio.ensure_future(self.set_config())
 
     async def set_config(self):
@@ -164,7 +150,7 @@ class Support(commands.Cog):
                 index = emb.footer.text.split(':')[1][1:]
                 users = await self.config.USERS()
                 member = guild.get_member(users[str(index)])
-                subprocess.call(['dotnet', '/data/DiscordChatExplorer/DiscordChatExporter.Cli.dll', 'export', '-c', f'{payload.channel_id}', '-t', 'NjA3OTcxODI4MDY5MTcxMjIy.XaESJQ.ergsHwUHUfCJFHXwb7bxKAE95Zk', '-b', '-o', f'/data/DiscordChatExplorer/transcript-{index}.html'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.call(['dotnet', '/data/DiscordChatExplorer/DiscordChatExporter.Cli.dll', 'export', '-c', f'{payload.channel_id}', '-t', f'{self.token}', '-b', '-o', f'/data/DiscordChatExplorer/transcript-{index}.html'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 presents = []
                 async for message in channel.history(limit=5000):
                     if guild.get_member(message.author.id).mention not in presents:
