@@ -60,13 +60,14 @@ class Stats(commands.Cog):
             em.add_field(name="Date d'arrivée sur le serveur", value=k.joined_at.__format__('%A %d %B %Y à %H:%M:%S'))
             await ctx.send(embed=em)
             result = self.cursor.execute(
-                'SELECT message_quantity FROM member_stats'
+                'SELECT message_quantity, voice_time FROM member_stats '
                 'WHERE user_id = ?',
                 [k.id]
             ).fetchall()
             if not result:
                 return await ctx.send('This user have no stats yet')
             await ctx.send(result[0][0])
+            await ctx.send(result[0][1])
 
     def cog_unload(self):
         self._executor.shutdown()
