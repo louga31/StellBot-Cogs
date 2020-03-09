@@ -21,7 +21,6 @@
     "permissions" : [
         "manage_roles"
     ],
-    "required_cogs" : [],
     "requirements" : [],
     "short" : "Automatically apply a role to new users",
     "tags" : [],
