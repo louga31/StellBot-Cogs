@@ -10,7 +10,7 @@ if listener is None:  # thanks Sinbad
     def listener(name=None):
         return lambda x: x
 
-class bansync(commands.Cog):
+class BanSync(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._is_consuming = False

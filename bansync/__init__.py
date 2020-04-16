@@ -1,4 +1,4 @@
-from .bansync import bansync
+from .bansync import BanSync
 
 def setup(bot):
-    bot.add_cog(bansync(bot))
+    bot.add_cog(BanSync(bot))
