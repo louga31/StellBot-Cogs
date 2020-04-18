@@ -66,6 +66,9 @@ class RoleSync(commands.Cog):
     @rolesync.command()
     async def forcerolecheck(self, ctx):
         """Force la recherche et attribution du role solitaire"""
+        embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title="Attribution des rôles en cours", description="Merci de patienter")
+        work_message = await ctx.send(embed=embed)
+        count = 0
         for guild in self.bot.guilds:
             if guild != self.main_guild:
                 wolf_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Wolf_Role())
@@ -74,6 +77,9 @@ class RoleSync(commands.Cog):
                         if not member in self.main_guild.members:
                             solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
                             await member.add_roles(solo_role, reason="L'utilisateur n'est pas sur le serveur principal")
+                            count += 1
+        embed = discord.Embed(colour=0x00ff40, title="Attibution terminée", description=f"{count} roles attribués")
+        work_message.edit(embed=embed)
 
     @rolesync.group(name="set")
     async def _set(self, ctx):
