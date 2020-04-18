@@ -78,7 +78,7 @@ class RoleSync(commands.Cog):
                             await member.add_roles(solo_role, reason="L'utilisateur n'est pas sur le serveur principal")
                             count += 1
         embed = discord.Embed(colour=0x00ff40, title="Attibution terminée", description=f"{count} roles attribués")
-        work_message.edit(embed=embed)
+        await work_message.edit(embed=embed)
 
     @rolesync.group(name="set")
     async def _set(self, ctx):
