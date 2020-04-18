@@ -40,7 +40,9 @@ class RoleSync(commands.Cog):
                     solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
                     await member.remove_roles(solo_role, reason="L'utilisateur a rejoint le serveur principal")
         else:
+            print("Non Principale")
             if await self.config.guild(self.main_guild).Admin_Role() in self.main_guild.get_member(member.id).roles:
+                print("Admin")
                 admin_role = discord.utils.get(guild.roles, id=await self.config.guild(member.guild).Admin_Role())
                 await member.add_roles(admin_role, reason="L'utilisateur est admin")
 
@@ -77,18 +79,27 @@ class RoleSync(commands.Cog):
 
     @_set.command()
     async def adminrole(self, ctx):
+        if not len(ctx.message.role_mentions):
+            await ctx.send("Veuillez mentionner un role")
+            return
         role = ctx.message.role_mentions[0]
         await self.config.guild(ctx.guild).Admin_Role.set(role.id)
         await ctx.send(f"Role admin définit sur {role.mention}")
 
     @_set.command()
     async def wolfrole(self, ctx):
+        if not len(ctx.message.role_mentions):
+            await ctx.send("Veuillez mentionner un role")
+            return
         role = ctx.message.role_mentions[0]
         await self.config.guild(ctx.guild).Wolf_Role.set(role.id)
         await ctx.send(f"Role loup définit sur {role.mention}")
 
     @_set.command()
     async def solorole(self, ctx):
+        if not len(ctx.message.role_mentions):
+            await ctx.send("Veuillez mentionner un role")
+            return
         role = ctx.message.role_mentions[0]
         await self.config.guild(ctx.guild).Solo_Role.set(role.id)
         await ctx.send(f"Role solitaire définit sur {role.mention}")
