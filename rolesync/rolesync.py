@@ -79,13 +79,13 @@ class RoleSync(commands.Cog):
     async def adminrole(self, ctx):
         role = ctx.message.role_mentions[0]
         await self.config.guild(ctx.guild).Admin_Role.set(role.id)
-        await ctx.send(f"Role admin définit sur `{role.mention}`")
+        await ctx.send(f"Role admin définit sur {role.mention}")
 
     @_set.command()
     async def wolfrole(self, ctx):
         role = ctx.message.role_mentions[0]
         await self.config.guild(ctx.guild).Wolf_Role.set(role.id)
-        await ctx.send(f"Role loup définit sur `{role.mention}`")
+        await ctx.send(f"Role loup définit sur {role.mention}")
 
     @_set.command()
     async def solorole(self, ctx):
