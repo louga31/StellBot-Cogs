@@ -41,7 +41,6 @@ class RoleSync(commands.Cog):
         else:
             if self.main_guild.get_role(await self.config.guild(self.main_guild).Admin_Role()) in self.main_guild.get_member(member.id).roles:
                 admin_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Admin_Role())
-                print(admin_role)
                 await member.add_roles(admin_role, reason="L'utilisateur est admin")
 
     @commands.Cog.listener()
@@ -63,6 +62,17 @@ class RoleSync(commands.Cog):
     async def rolesync(self, ctx):
         """Commande principale de RoleSync"""
         pass
+    
+    @rolesync.command()
+    async def forcerolecheck(self, ctx):
+        for guild in self.bot.guilds:
+            if guild != self.main_guild:
+                wolf_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Wolf_Role())
+                for member in guild.members:
+                    if wolf_role in member.roles:
+                        if not member in self.main_guild.members:
+                            solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
+                            await member.add_roles(solo_role, reason="L'utilisateur n'est pas sur le serveur principal")
 
     @rolesync.group(name="set")
     async def _set(self, ctx):
