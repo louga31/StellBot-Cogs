@@ -29,7 +29,6 @@ class RoleSync(commands.Cog):
         self.config.register_guild(**default_guild)
 
         self.main_guild = self.bot.get_guild(await self.config.Main_Guild())
-        print(self.main_guild)
     
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -43,7 +42,7 @@ class RoleSync(commands.Cog):
             print("Non Principale")
             if self.main_guild.get_role(await self.config.guild(self.main_guild).Admin_Role()) in self.main_guild.get_member(member.id).roles:
                 print("Admin")
-                admin_role = discord.utils.get(guild.roles, id=await self.config.guild(member.guild).Admin_Role())
+                admin_role = discord.utils.get(self.main_guild.roles, id=await self.config.guild(member.guild).Admin_Role())
                 await member.add_roles(admin_role, reason="L'utilisateur est admin")
 
     @commands.Cog.listener()
