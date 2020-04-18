@@ -29,6 +29,7 @@ class RoleSync(commands.Cog):
         self.config.register_guild(**default_guild)
 
         self.main_guild = self.bot.get_guild(await self.config.Main_Guild())
+        print(self.main_guild)
     
     @commands.Cog.listener()
     async def on_member_join(self, member):
