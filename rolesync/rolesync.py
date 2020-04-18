@@ -1,10 +1,9 @@
-import concurrent.futures
-import functools
 import asyncio
 import locale
-from redbot.core import Config, commands
-from redbot.core.data_manager import cog_data_path
+
 import discord
+from redbot.core import Config, commands
+from redbot.core.bot import RedBase
 
 locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
 
@@ -16,6 +15,7 @@ class RoleSync(commands.Cog):
         asyncio.ensure_future(self.init_config())
 
     async def init_config(self):
+        """Init cogs config"""
         self.config = Config.get_conf(self, 143056204359270400)
 
         default_global = {
@@ -29,7 +29,11 @@ class RoleSync(commands.Cog):
         self.config.register_guild(**default_guild)
 
         self.main_guild = self.bot.get_guild(await self.config.Main_Guild())
-    
+
+    async def get_colour(self, channel):
+        """Get Bot's main colour"""
+        return await RedBase.get_embed_colour(self.bot, channel)
+
     @commands.Cog.listener()
     async def on_member_join(self, member):
         """Member join event"""
@@ -53,15 +57,10 @@ class RoleSync(commands.Cog):
                     if guild != self.main_guild:
                         solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
                         await member.add_roles(solo_role, reason="L'utilisateur a quitté le serveur principal")
-    
-    @commands.Cog.listener()
-    async def on_member_update(self, before, after):
-        pass
 
     @commands.group(name="rolesync")
     async def rolesync(self, ctx):
         """Commande principale de RoleSync"""
-        pass
     
     @rolesync.command()
     async def forcerolecheck(self, ctx):
@@ -84,7 +83,6 @@ class RoleSync(commands.Cog):
     @rolesync.group(name="set")
     async def _set(self, ctx):
         """Configuration de rolesync"""
-        pass
     
     @_set.command()
     async def mainguild(self, ctx):
@@ -96,7 +94,7 @@ class RoleSync(commands.Cog):
     @_set.command()
     async def adminrole(self, ctx):
         """Definit le role admin de ce serveur"""
-        if not len(ctx.message.role_mentions):
+        if len(ctx.message.role_mentions) == 0:
             await ctx.send("Veuillez mentionner un role")
             return
         role = ctx.message.role_mentions[0]
@@ -106,7 +104,7 @@ class RoleSync(commands.Cog):
     @_set.command()
     async def wolfrole(self, ctx):
         """Definit le role wolf de ce serveur"""
-        if not len(ctx.message.role_mentions):
+        if len(ctx.message.role_mentions) == 0:
             await ctx.send("Veuillez mentionner un role")
             return
         role = ctx.message.role_mentions[0]
@@ -116,7 +114,7 @@ class RoleSync(commands.Cog):
     @_set.command()
     async def solorole(self, ctx):
         """Definit le role solitaire de ce serveur"""
-        if not len(ctx.message.role_mentions):
+        if len(ctx.message.role_mentions) == 0:
             await ctx.send("Veuillez mentionner un role")
             return
         role = ctx.message.role_mentions[0]
