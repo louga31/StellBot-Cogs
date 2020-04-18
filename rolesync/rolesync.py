@@ -27,7 +27,6 @@ class RoleSync(commands.Cog):
         }
         self.config.register_global(**default_global)
         self.config.register_guild(**default_guild)
-        self.config.guild_from_id()
 
         self.main_guild = self.bot.get_guild(await self.config.Main_Guild())
     
@@ -41,7 +40,7 @@ class RoleSync(commands.Cog):
                     await member.remove_roles(solo_role, reason="L'utilisateur a rejoint le serveur principal")
         else:
             print("Non Principale")
-            if await self.config.guild(self.main_guild).Admin_Role() in self.main_guild.get_member(member.id).roles:
+            if self.main_guild.get_role(await self.config.guild(self.main_guild).Admin_Role()) in self.main_guild.get_member(member.id).roles:
                 print("Admin")
                 admin_role = discord.utils.get(guild.roles, id=await self.config.guild(member.guild).Admin_Role())
                 await member.add_roles(admin_role, reason="L'utilisateur est admin")
