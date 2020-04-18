@@ -65,6 +65,7 @@ class RoleSync(commands.Cog):
     
     @rolesync.command()
     async def forcerolecheck(self, ctx):
+        """Force la recherche et attribution du role solitaire"""
         for guild in self.bot.guilds:
             if guild != self.main_guild:
                 wolf_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Wolf_Role())
@@ -81,12 +82,14 @@ class RoleSync(commands.Cog):
     
     @_set.command()
     async def mainguild(self, ctx):
+        """Definit le serveur principal"""
         self.main_guild = self.bot.get_guild(int(ctx.guild.id))
         await self.config.Main_Guild.set(self.main_guild.id)
         await ctx.send(f"Serveur principal définit sur `{ctx.guild.name}`")
 
     @_set.command()
     async def adminrole(self, ctx):
+        """Definit le role admin de ce serveur"""
         if not len(ctx.message.role_mentions):
             await ctx.send("Veuillez mentionner un role")
             return
@@ -96,6 +99,7 @@ class RoleSync(commands.Cog):
 
     @_set.command()
     async def wolfrole(self, ctx):
+        """Definit le role wolf de ce serveur"""
         if not len(ctx.message.role_mentions):
             await ctx.send("Veuillez mentionner un role")
             return
@@ -105,6 +109,7 @@ class RoleSync(commands.Cog):
 
     @_set.command()
     async def solorole(self, ctx):
+        """Definit le role solitaire de ce serveur"""
         if not len(ctx.message.role_mentions):
             await ctx.send("Veuillez mentionner un role")
             return
