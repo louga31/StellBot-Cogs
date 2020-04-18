@@ -50,16 +50,16 @@ class RoleSync(commands.Cog):
     async def mainguild(self, ctx):
         self.main_guild = int(ctx.guild.id)
         await self.config.Main_Guild.set(self.main_guild)
-        ctx.send(f"Serveur principal définit sur `{ctx.guild.name}`")
+        await ctx.send(f"Serveur principal définit sur `{ctx.guild.name}`")
 
     @_set.command()
     async def wolfrole(self, ctx):
         role = ctx.message.role_mentions[0]
         await self.config.guild(ctx.guild).Wolf_Role.set(role.id)
-        ctx.send(f"Role loup définit sur `{role.mention}`")
+        await ctx.send(f"Role loup définit sur {role.mention}")
 
     @_set.command()
     async def solorole(self, ctx):
         role = ctx.message.role_mentions[0]
         await self.config.guild(ctx.guild).Solo_Role.set(role.id)
-        ctx.send(f"Role solitaire définit sur `{role.mention}`")
+        await ctx.send(f"Role solitaire définit sur {role.mention}")
