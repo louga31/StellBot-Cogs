@@ -59,10 +59,10 @@ class RoleSync(commands.Cog):
                 if guild != self.main_guild:
                     print(f"Serveur secondaire: {guild.name}")
                     wolf_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Wolf_Role())
-                    if wolf_role in member.roles:
-                        print("L'utilisateur est wolf")
-                        if not guild.get_member(member.id) is None:
-                            print("L'utilisateur est dans le serveur")
+                    if not guild.get_member(member.id) is None:
+                        print("L'utilisateur est dans le serveur")
+                        if wolf_role in guild.get_member(member.id).roles:
+                            print("L'utilisateur est wolf")
                             solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
                             await guild.get_member(member.id).add_roles(solo_role, reason="L'utilisateur a quitté le serveur principal")
 
