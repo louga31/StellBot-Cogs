@@ -23,6 +23,7 @@ class RoleSync(commands.Cog):
         }
         default_guild = {
             "Wolf_Role": 0,
+            "Member_Role": 0,
             "Solo_Role": 0
         }
         self.config.register_global(**default_global)
@@ -49,20 +50,19 @@ class RoleSync(commands.Cog):
                 if self.main_guild.get_role(await self.config.guild(self.main_guild).Admin_Role()) in self.main_guild.get_member(member.id).roles:
                     admin_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Admin_Role())
                     await member.add_roles(admin_role, reason="L'utilisateur est admin")
+                if self.main_guild.get_role(await self.config.guild(self.main_guild).Wolf_Role()) in self.main_guild.get_member(member.id).roles:
+                    member_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Member_Role())
+                    await member.add_roles(member_role, reason="L'utilisateur est membre")
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         """Member leave event"""
         if member.guild == self.main_guild:
-            print("Serveur principal")
             for guild in self.bot.guilds:
                 if guild != self.main_guild:
-                    print(f"Serveur secondaire: {guild.name}")
                     wolf_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Wolf_Role())
                     if not guild.get_member(member.id) is None:
-                        print("L'utilisateur est dans le serveur")
                         if wolf_role in guild.get_member(member.id).roles:
-                            print("L'utilisateur est wolf")
                             solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
                             await guild.get_member(member.id).add_roles(solo_role, reason="L'utilisateur a quitté le serveur principal")
 
@@ -118,6 +118,16 @@ class RoleSync(commands.Cog):
         role = ctx.message.role_mentions[0]
         await self.config.guild(ctx.guild).Wolf_Role.set(role.id)
         await ctx.send(f"Role loup définit sur {role.mention}")
+
+    @_set.command()
+    async def memberrole(self, ctx):
+        """Definit le role membre de ce serveur"""
+        if len(ctx.message.role_mentions) == 0:
+            await ctx.send("Veuillez mentionner un role")
+            return
+        role = ctx.message.role_mentions[0]
+        await self.config.guild(ctx.guild).Member_Role.set(role.id)
+        await ctx.send(f"Role membre définit sur {role.mention}")
 
     @_set.command()
     async def solorole(self, ctx):
