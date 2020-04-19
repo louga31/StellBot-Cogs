@@ -54,11 +54,15 @@ class RoleSync(commands.Cog):
     async def on_member_remove(self, member):
         """Member leave event"""
         if member.guild == self.main_guild:
+            print("Serveur principal")
             wolf_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Wolf_Role())
             if wolf_role in member.roles:
+                print("L'utilisateur est wolf")
                 for guild in self.bot.guilds:
                     if guild != self.main_guild:
+                        print(f"Serveur secondaire: {guild.name}")
                         if not guild.get_member(member.id) is None:
+                            print("L'utilisateur est dans le serveur")
                             solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
                             await guild.get_member(member.id).add_roles(solo_role, reason="L'utilisateur a quitté le serveur principal")
 
