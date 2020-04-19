@@ -42,7 +42,8 @@ class RoleSync(commands.Cog):
                 if guild != self.main_guild:
                     if not guild.get_member(member.id) is None:
                         solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
-                        await guild.get_member(member.id).remove_roles(solo_role, reason="L'utilisateur a rejoint le serveur principal")
+                        if solo_role in guild.get_member(member.id).roles:
+                            await guild.get_member(member.id).remove_roles(solo_role, reason="L'utilisateur a rejoint le serveur principal")
         else:
             if not self.main_guild.get_member(member.id) is None:
                 if self.main_guild.get_role(await self.config.guild(self.main_guild).Admin_Role()) in self.main_guild.get_member(member.id).roles:
