@@ -26,19 +26,16 @@ class Support(commands.Cog):
 
     async def set_config(self):
         self.transcript_id = await self.config.TRANSCRIPT_ID()
-        self.admin_role = await self.config.ADMIN_ROLE()
 
     async def get_colour(self, channel):
         return await RedBase.get_embed_colour(self.bot, channel)
 
     async def create_ticket(self, index, member, category, guild):
         overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            guild.get_role(self.admin_role): discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            member: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+            guild.default_role: discord.PermissionOverwrite(read_messages=True)
         }
         ticket_channel = await guild.create_text_channel(f'📩-Ticket - {index}', overwrites=overwrites, category=category, reason="L'utilisateur a demandé de l'aide")
-        await ticket_channel.send(f"{member.mention}\nDécrit ton problème ici, un administrateur te répondra vite")
+        await ticket_channel.send(f"{member.mention}\nDécrit ton problème ici, un membre te répondra vite")
         options = ["Close"]
         reactions = ['🔒']
         embed = discord.Embed(colour=0x00aa40, title="Support", description="Pour fermer le ticket, cliquez sur 🔒")
@@ -203,11 +200,4 @@ class Support(commands.Cog):
         self.transcript_id = channel_id
         await self.config.TRANSCRIPT_ID.set(self.transcript_id)
         embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title="Channel transcript définit")
-        await ctx.send(embed=embed)
-
-    @support_set.command()
-    async def admin_role(self, ctx, admin_role_id: int):
-        self.admin_role = admin_role_id 
-        await self.config.ADMIN_ROLE.set(self.admin_role)
-        embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title="Role admin définit")
         await ctx.send(embed=embed)
