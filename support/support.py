@@ -101,7 +101,7 @@ class Support(commands.Cog):
 
                 users = await self.config.USERS()
                 member = guild.get_member(users[str(index)])
-                await channel.set_permissions(member, read_messages=False, send_messages=False, reason='Ticket fermé')
+                await channel.set_permissions(guild.default_role, read_messages=False, reason='Ticket fermé')
                 await channel.edit(reason='Ticket fermé', name=f'🔒-Fermé - {index}')
 
                 embed = discord.Embed(colour=0xd32f2f, title="Outils d'adminitration", description=''.join(description))
