@@ -127,7 +127,7 @@ class Support(commands.Cog):
                 index = emb.footer.text.split(':')[1][1:]
                 users = await self.config.USERS()
                 member = guild.get_member(users[str(index)])
-                await channel.set_permissions(member, read_messages=True, send_messages=True)
+                await channel.set_permissions(guild.default_role, read_messages=True)
                 await channel.edit(reason='Ticket ouvert', name=f'📩-Ticket - {index}')
                 tickets = await self.config.TICKETS()
                 channel_id = tickets[str(index)][0]
