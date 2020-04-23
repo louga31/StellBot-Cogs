@@ -81,12 +81,6 @@ class Support(commands.Cog):
         elif embed.footer.text.startswith('Ticket ID:'):
             await message.remove_reaction(payload.emoji, member)
             if str(payload.emoji) == '🔒':
-                options = ['Oui', 'Non']
-                reactions = ['✅', '❌']
-                for reaction in reactions[:len(options)]:
-                    await message.add_reaction(reaction)
-
-            elif str(payload.emoji) == '✅':
                 await message.clear_reactions()
                 emb = message.embeds[0]
                 embed = discord.Embed(colour=0xfbfe32, title="", description=f"Ticket fermé par {member.mention}")
@@ -110,13 +104,6 @@ class Support(commands.Cog):
                     await react_message.add_reaction(reaction)
                 embed.set_footer(text='Mod ID: {}'.format(index))
                 await react_message.edit(embed=embed)
-
-            elif str(payload.emoji) == '❌':
-                await message.clear_reactions()
-                options = ["Close"]
-                reactions = ['🔒']
-                for reaction in reactions[:len(options)]:
-                    await message.add_reaction(reaction)
 
         elif embed.footer.text.startswith('Mod ID:'):
             if str(payload.emoji) == '🔓':
