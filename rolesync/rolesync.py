@@ -109,7 +109,7 @@ class RoleSync(commands.Cog):
                                 solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
                                 await member.add_roles(solo_role, reason="L'utilisateur n'est pas sur le serveur principal")
                                 count += 1
-            await asyncio.sleep(60)
+            await asyncio.sleep(3600)
 
     @rolesync.group(name="set")
     async def _set(self, ctx):
