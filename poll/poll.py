@@ -196,6 +196,6 @@ class Poll(commands.Cog):
 
     @commands.guild_only()
     @commands.command(pass_context=True)
-    async def say(self, ctx, message):
+    async def say(self, ctx, *message):
         await ctx.message.delete()
         await ctx.send(message)
