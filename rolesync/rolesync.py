@@ -13,6 +13,7 @@ class RoleSync(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         asyncio.ensure_future(self.init_config())
+        self.rolecheck_task = self.bot.loop.create_task(self.rolecheckauto())
 
     async def init_config(self):
         """Init cogs config"""
@@ -30,6 +31,9 @@ class RoleSync(commands.Cog):
         self.config.register_guild(**default_guild)
 
         self.main_guild = self.bot.get_guild(await self.config.Main_Guild())
+
+    def cog_unload(self):
+        self.rolecheck_task.cancel()
 
     async def get_colour(self, channel):
         """Get Bot's main colour"""
@@ -91,6 +95,21 @@ class RoleSync(commands.Cog):
                             count += 1
         embed = discord.Embed(colour=0x00ff40, title="Attibution terminée", description=f"{count} roles attribués")
         await work_message.edit(embed=embed)
+    
+    async def rolecheckauto(self):
+        """Force la recherche et attribution du role solitaire"""
+        while self == self.bot.get_cog("RoleSync"):
+            count = 0
+            for guild in self.bot.guilds:
+                if guild != self.main_guild:
+                    wolf_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Wolf_Role())
+                    for member in guild.members:
+                        if wolf_role in member.roles:
+                            if not member in self.main_guild.members:
+                                solo_role = discord.utils.get(guild.roles, id=await self.config.guild(guild).Solo_Role())
+                                await member.add_roles(solo_role, reason="L'utilisateur n'est pas sur le serveur principal")
+                                count += 1
+            await asyncio.sleep(60)
 
     @rolesync.group(name="set")
     async def _set(self, ctx):
