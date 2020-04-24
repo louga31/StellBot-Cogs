@@ -214,4 +214,4 @@ class Poll(commands.Cog):
         members = ctx.message.mentions
         for member in members:
             admin_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Admin_Role())
-            await member.remove_role(admin_role, reason="Commande forcée")
+            await member.remove_roles(admin_role, reason="Commande forcée")
