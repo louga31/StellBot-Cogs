@@ -199,3 +199,19 @@ class Poll(commands.Cog):
     async def say(self, ctx, *message):
         await ctx.message.delete()
         await ctx.send(message)
+
+    @commands.guild_only()
+    @commands.command(pass_context=True)
+    async def set_admin(self, ctx):
+        members = ctx.message.mentions
+        for member in members:
+            admin_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Admin_Role())
+            await member.add_roles(admin_role, reason="Commande forcée")
+    
+    @commands.guild_only()
+    @commands.command(pass_context=True)
+    async def remove_admin(self, ctx):
+        members = ctx.message.mentions
+        for member in members:
+            admin_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Admin_Role())
+            await member.remove_role(admin_role, reason="Commande forcée")
