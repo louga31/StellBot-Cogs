@@ -51,8 +51,10 @@ class RoleSync(commands.Cog):
                     admin_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Admin_Role())
                     await member.add_roles(admin_role, reason="L'utilisateur est admin")
                 if self.main_guild.get_role(await self.config.guild(self.main_guild).Wolf_Role()) in self.main_guild.get_member(member.id).roles:
-                    member_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Member_Role())
-                    await member.add_roles(member_role, reason="L'utilisateur est membre")
+                    if not member.guild.get_role(await self.config.guild(member.guild).Member_Role()) in member.roles:
+                        member_role = discord.utils.get(member.guild.roles, id=await self.config.guild(member.guild).Member_Role())
+                        await member.add_roles(member_role, reason="L'utilisateur est membre")
+
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
