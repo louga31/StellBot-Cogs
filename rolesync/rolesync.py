@@ -118,8 +118,8 @@ class RoleSync(commands.Cog):
     @_set.command()
     async def mainguild(self, ctx):
         """Definit le serveur principal"""
-        self.main_guild = self.bot.get_guild(int(ctx.guild.id))
-        await self.config.Main_Guild.set(self.main_guild.id)
+        await self.config.Main_Guild.set(int(ctx.guild.id))
+        await self.init_config()
         await ctx.send(f"Serveur principal définit sur `{ctx.guild.name}`")
 
     @_set.command()
