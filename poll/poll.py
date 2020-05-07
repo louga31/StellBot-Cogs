@@ -174,9 +174,9 @@ class Poll(commands.Cog):
         await self.config.POLLS.set(self.polls)
 
     @commands.command(pass_context=True)
-    async def poll_result(self, ctx, poll: str):
+    async def poll_result(self, ctx, id: str):
         for poll in self.polls:
-            if poll["id"] == poll:
+            if poll["id"] == id:
                 pollers = poll['pollers']
                 embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title="Résultats du vote (Message 1)")
                 for index, (x, y) in enumerate(pollers.items()):

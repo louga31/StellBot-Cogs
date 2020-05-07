@@ -80,30 +80,29 @@ class Support(commands.Cog):
 
         elif embed.footer.text.startswith('Ticket ID:'):
             await message.remove_reaction(payload.emoji, member)
-            if str(payload.emoji) == '🔒':
-                await message.clear_reactions()
-                emb = message.embeds[0]
-                embed = discord.Embed(colour=0xfbfe32, title="", description=f"Ticket fermé par {member.mention}")
-                await channel.send(embed=embed)
+            await message.clear_reactions()
+            emb = message.embeds[0]
+            embed = discord.Embed(colour=0xfbfe32, title="", description=f"Ticket fermé par {member.mention}")
+            await channel.send(embed=embed)
 
-                options = ['Réouvrir le Ticket', 'Supprimer le Ticket']
-                reactions = ['🔓', '⛔']
-                description = []
-                for x, option in enumerate(options):
-                    description += '\n {} {}'.format(reactions[x], option)
-                index = emb.footer.text.split(':')[1][1:]
+            options = ['Réouvrir le Ticket', 'Supprimer le Ticket']
+            reactions = ['🔓', '⛔']
+            description = []
+            for x, option in enumerate(options):
+                description += '\n {} {}'.format(reactions[x], option)
+            index = emb.footer.text.split(':')[1][1:]
 
-                users = await self.config.USERS()
-                member = guild.get_member(users[str(index)])
-                await channel.set_permissions(guild.default_role, read_messages=False, reason='Ticket fermé')
-                await channel.edit(reason='Ticket fermé', name=f'🔒-Fermé - {index}')
+            users = await self.config.USERS()
+            member = guild.get_member(users[str(index)])
+            await channel.set_permissions(guild.default_role, read_messages=False, reason='Ticket fermé')
+            await channel.edit(reason='Ticket fermé', name=f'🔒-Fermé - {index}')
 
-                embed = discord.Embed(colour=0xd32f2f, title="Outils d'adminitration", description=''.join(description))
-                react_message = await channel.send(embed=embed)
-                for reaction in reactions[:len(options)]:
-                    await react_message.add_reaction(reaction)
-                embed.set_footer(text='Mod ID: {}'.format(index))
-                await react_message.edit(embed=embed)
+            embed = discord.Embed(colour=0xd32f2f, title="Outils d'adminitration", description=''.join(description))
+            react_message = await channel.send(embed=embed)
+            for reaction in reactions[:len(options)]:
+                await react_message.add_reaction(reaction)
+            embed.set_footer(text='Mod ID: {}'.format(index))
+            await react_message.edit(embed=embed)
 
         elif embed.footer.text.startswith('Mod ID:'):
             if str(payload.emoji) == '🔓':
