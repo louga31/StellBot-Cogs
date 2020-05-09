@@ -280,7 +280,6 @@ class SafeClean(commands.Cog):
         to_delete.append(ctx.message)
 
         def check(m):
-            print(m.id)
             for message in to_delete:
                 if m.id == message.id:
                     return True
@@ -330,7 +329,6 @@ class SafeClean(commands.Cog):
         to_delete.append(ctx.message)
 
         def check(m):
-            print(m.id)
             for message in to_delete:
                 if m.id == message.id:
                     return True
@@ -361,7 +359,6 @@ class SafeClean(commands.Cog):
         to_delete.append(ctx.message)
 
         def check(m):
-            print(m.id)
             for message in to_delete:
                 if m.id == message.id:
                     return True
