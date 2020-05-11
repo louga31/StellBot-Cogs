@@ -77,7 +77,7 @@ class BanSync(commands.Cog):
                 try:
                     await self.queue_action(is_ban=True, guild=guild, user=ban['user'], reason=ban['reason'])
                 except Exception as e:
-                    print('Failed to queue ban: {1}:{0}'.format(ban,guild))
+                    print('Failed to queue ban: {1}:{0} because {2}'.format(ban,guild,e))
 
     async def remove_duplicates(self):
         key, ban_list = await self.ban_list.lock()
