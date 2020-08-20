@@ -45,8 +45,8 @@ class Autorole(commands.Cog):
         self.config.register_guild(**default_settings)
         self.users = {}
         self.guild = self.bot.get_guild(140834431630835712)
-        self.channel = self.guild.get_channel(608064170554032138)
-        self.message = self.channel.send("React to me")
+        #self.channel = self.guild.get_channel(608064170554032138)
+        #self.message = self.channel.send("React to me")
 
     async def _no_perms(self, channel=None):
         m = _(
