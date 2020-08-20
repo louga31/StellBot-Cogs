@@ -17,6 +17,7 @@ from redbot.core.utils.menus import (
     close_menu,
     start_adding_reactions,
 )
+from redbot.core.bot import RedBase
 
 default_settings = {
     "ENABLED": False,
