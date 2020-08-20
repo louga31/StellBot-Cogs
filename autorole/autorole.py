@@ -69,85 +69,85 @@ class Autorole(commands.Cog):
     async def get_colour(self, channel):
         return await RedBase.get_embed_colour(self.bot, channel)
 
-    @listener()
-    async def on_reaction_add(self, reaction, user):
-        guild = user.guild
+    # @listener()
+    # async def on_reaction_add(self, reaction, user):
+    #     guild = user.guild
         
-        self_roles_id = [142398155437113344]
-        roles = [role for role in guild.roles if role.id in self_roles_id]
-        if not guild.me.guild_permissions.manage_roles:
-            await self._no_perms()
-            return
-        if reaction.message != self.message:
-            return
-        if reaction.emoji == "🏃":
-            for role in roles:
-                await user.add_roles(role, reason=_("Joined the server"))
+    #     self_roles_id = [142398155437113344]
+    #     roles = [role for role in guild.roles if role.id in self_roles_id]
+    #     if not guild.me.guild_permissions.manage_roles:
+    #         await self._no_perms()
+    #         return
+    #     if reaction.message != self.message:
+    #         return
+    #     if reaction.emoji == "🏃":
+    #         for role in roles:
+    #             await user.add_roles(role, reason=_("Joined the server"))
 
-    @listener()
-    async def on_message(self, message):
-        guild = message.guild
-        user = message.author
-        channel = message.channel
-        try:
-            agree_channel = guild.get_channel(await self.config.guild(guild).AGREE_CHANNEL())
-        except:
-            return
-        if guild is None:
-            return
-        if agree_channel is None:
-            return
-        if channel.id != agree_channel.id:
-            return
-        if user.bot:
-            return
+    # @listener()
+    # async def on_message(self, message):
+    #     guild = message.guild
+    #     user = message.author
+    #     channel = message.channel
+    #     try:
+    #         agree_channel = guild.get_channel(await self.config.guild(guild).AGREE_CHANNEL())
+    #     except:
+    #         return
+    #     if guild is None:
+    #         return
+    #     if agree_channel is None:
+    #         return
+    #     if channel.id != agree_channel.id:
+    #         return
+    #     if user.bot:
+    #         return
 
-        if user.id in self.users:
-            if not guild.me.guild_permissions.manage_roles:
-                await self._no_perms(agree_channel)
-                return
-            if self.users[user.id].lower() in message.content.lower():
-                roles_id = await self.config.guild(guild).ROLE()
-                del self.users[user.id]
-                roles = [role for role in guild.roles if role.id in roles_id]
-                for role in roles:
-                    await user.add_roles(role, reason=_("Agreed to the rules"))
-                if agree_channel.permissions_for(guild.me).add_reactions:
-                    await message.add_reaction("✅")
+    #     if user.id in self.users:
+    #         if not guild.me.guild_permissions.manage_roles:
+    #             await self._no_perms(agree_channel)
+    #             return
+    #         if self.users[user.id].lower() in message.content.lower():
+    #             roles_id = await self.config.guild(guild).ROLE()
+    #             del self.users[user.id]
+    #             roles = [role for role in guild.roles if role.id in roles_id]
+    #             for role in roles:
+    #                 await user.add_roles(role, reason=_("Agreed to the rules"))
+    #             if agree_channel.permissions_for(guild.me).add_reactions:
+    #                 await message.add_reaction("✅")
 
-    async def _agree_maker(self, member):
-        guild = member.guild
-        self.last_guild = guild
-        # await self._verify_json(None)
-        key = await self.config.guild(guild).AGREE_KEY()
-        if key is None:
-            key = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
-            # <3 Stackoverflow http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
+    # async def _agree_maker(self, member):
+    #     guild = member.guild
+    #     self.last_guild = guild
+    #     # await self._verify_json(None)
+    #     key = await self.config.guild(guild).AGREE_KEY()
+    #     if key is None:
+    #         key = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+    #         # <3 Stackoverflow http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
 
-        self.users[member.id] = key
+    #     self.users[member.id] = key
 
-        ch = guild.get_channel(await self.config.guild(guild).AGREE_CHANNEL())
-        msg = await self.config.guild(guild).AGREE_MSG()
-        if msg is None:
-            msg = "{mention} please enter {key} in {channel}"
-        try:
-            msg = msg.format(
-                key=key,
-                member=member,
-                name=member.name,
-                mention=member.mention,
-                guild=guild.name,
-                channel=ch.mention,
-            )
-        except Exception as e:
-            print(e)
+    #     ch = guild.get_channel(await self.config.guild(guild).AGREE_CHANNEL())
+    #     msg = await self.config.guild(guild).AGREE_MSG()
+    #     if msg is None:
+    #         msg = "{mention} please enter {key} in {channel}"
+    #     try:
+    #         msg = msg.format(
+    #             key=key,
+    #             member=member,
+    #             name=member.name,
+    #             mention=member.mention,
+    #             guild=guild.name,
+    #             channel=ch.mention,
+    #         )
+    #     except Exception as e:
+    #         print(e)
 
-        try:
-            msg = await member.send(msg)
-        except discord.Forbidden:
-            msg = await ch.send(msg)
-        except discord.HTTPException:
-            return
+    #     try:
+    #         msg = await member.send(msg)
+    #     except discord.Forbidden:
+    #         msg = await ch.send(msg)
+    #     except discord.HTTPException:
+    #         return
 
     async def _auto_give(self, member):
         guild = member.guild
@@ -159,17 +159,17 @@ class Autorole(commands.Cog):
         for role in roles:
             await member.add_roles(role, reason=_("Joined the server"))
             
-    async def _clear_react(self, message, emoji: dict = None):
-        try:
-            await message.clear_reactions()
-        except discord.Forbidden:
-            if not emoji:
-                return
-            for key in emoji.values():
-                await asyncio.sleep(0.2)
-                await message.remove_reaction(key, self.bot.user)
-        except (discord.HTTPException, discord.NotFound):
-            return
+    # async def _clear_react(self, message, emoji: dict = None):
+    #     try:
+    #         await message.clear_reactions()
+    #     except discord.Forbidden:
+    #         if not emoji:
+    #             return
+    #         for key in emoji.values():
+    #             await asyncio.sleep(0.2)
+    #             await message.remove_reaction(key, self.bot.user)
+    #     except (discord.HTTPException, discord.NotFound):
+    #         return
 
     async def _give_role(self, member, roles_id):
         guild = member.guild
@@ -185,7 +185,8 @@ class Autorole(commands.Cog):
         guild = member.guild
         if await self.config.guild(guild).ENABLED():
             if await self.config.guild(guild).AGREE_CHANNEL() is not None:
-                await self._agree_maker(member)
+                pass
+                # await self._agree_maker(member)
             else:  # Immediately give the new user the role
                 await self._auto_give(member)
                 
@@ -209,7 +210,6 @@ class Autorole(commands.Cog):
             channel = guild.get_channel(ch_id)
             chn_name = channel.name if channel is not None else "None"
             chn_mention = channel.mention if channel is not None else "None"
-            role_name = []
             if ctx.channel.permissions_for(ctx.me).embed_links:
                 role_name_str = ", ".join(role.mention for role in guild.roles if role.id in roles)
                 embed = discord.Embed(colour=await self.get_colour(channel))
