@@ -32,7 +32,6 @@ if listener is None:  # thanks Sinbad
     def listener(name=None):
         return lambda x: x
 
-
 @cog_i18n(_)
 class Autorole(commands.Cog):
     """
@@ -67,11 +66,8 @@ class Autorole(commands.Cog):
         else:
             print(m + _("\n I also don't have permission to speak in #") + channel.name)
 
-    async def get_colour(self, guild):
-        if await self.bot.db.guild(guild).use_bot_color():
-            return guild.me.colour
-        else:
-            return await self.bot.db.color()
+    async def get_colour(self, channel):
+        return await RedBase.get_embed_colour(self.bot, channel)
 
     @listener()
     async def on_reaction_add(self, reaction, user):
@@ -216,7 +212,7 @@ class Autorole(commands.Cog):
             role_name = []
             if ctx.channel.permissions_for(ctx.me).embed_links:
                 role_name_str = ", ".join(role.mention for role in guild.roles if role.id in roles)
-                embed = discord.Embed(colour=await self.get_colour(guild))
+                embed = discord.Embed(colour=await self.get_colour(channel))
                 embed.set_author(name=_("Autorole settings for ") + guild.name)
                 embed.add_field(name=_("Current autorole state: "), value=str(enabled))
                 embed.add_field(name=_("Current Roles: "), value=role_name_str)
