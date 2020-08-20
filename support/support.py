@@ -35,7 +35,7 @@ class Support(commands.Cog):
             guild.default_role: discord.PermissionOverwrite(read_messages=True)
         }
         ticket_channel = await guild.create_text_channel(f'📩-Ticket - {index}', overwrites=overwrites, category=category, reason="L'utilisateur a demandé de l'aide")
-        await ticket_channel.send(f"{member.mention}\nDécrit ton problème ici, un membre te répondra vite")
+        await ticket_channel.send(f"{member.mention}\nDécrit ton problème ici, un membre te répondra vite", allowed_mentions=discord.AllowedMentions(users=True))
         options = ["Close"]
         reactions = ['🔒']
         embed = discord.Embed(colour=0x00aa40, title="Support", description="Pour fermer le ticket, cliquez sur 🔒")
@@ -83,7 +83,7 @@ class Support(commands.Cog):
             await message.clear_reactions()
             emb = message.embeds[0]
             embed = discord.Embed(colour=0xfbfe32, title="", description=f"Ticket fermé par {member.mention}")
-            await channel.send(embed=embed)
+            await channel.send(embed=embed, allowed_mentions=discord.AllowedMentions(users=True))
 
             options = ['Réouvrir le Ticket', 'Supprimer le Ticket']
             reactions = ['🔓', '⛔']
@@ -108,7 +108,7 @@ class Support(commands.Cog):
             if str(payload.emoji) == '🔓':
                 await message.delete()
                 embed = discord.Embed(colour=0x00aa40, title="", description=f"Ticket ouvert par {member.mention}")
-                await channel.send(embed=embed)
+                await channel.send(embed=embed, allowed_mentions=discord.AllowedMentions(users=True))
                 emb = message.embeds[0]
                 index = emb.footer.text.split(':')[1][1:]
                 users = await self.config.USERS()
@@ -145,7 +145,7 @@ class Support(commands.Cog):
                     embed.add_field(name='Utilisateurs dans le transcript', value=' '.join(presents), inline=False)
                 else:
                     embed.add_field(name='Utilisateurs dans le transcript', value='-', inline=False)
-                await transcript.send(embed=embed, file=discord.File(f'/data/DiscordChatExplorer/transcript-{index}.html'))
+                await transcript.send(embed=embed, file=discord.File(f'/data/DiscordChatExplorer/transcript-{index}.html'), allowed_mentions=discord.AllowedMentions(users=True))
                 os.remove(f'/data/DiscordChatExplorer/transcript-{index}.html')
                 await channel.delete(reason='Ticket Supprimé')
                 tickets = await self.config.TICKETS()

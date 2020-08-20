@@ -223,7 +223,7 @@ class Autorole(commands.Cog):
                     embed.add_field(name=_("Agreement key: "), value=key)
                 if channel:
                     embed.add_field(name=_("Agreement channel: "), value=chn_mention)
-                await ctx.send(embed=embed)
+                await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
             else:
                 role_name_str = ", ".join(role.name for role in guild.roles if role.id in roles)
                 send_msg = (
@@ -302,140 +302,140 @@ class Autorole(commands.Cog):
         await self.config.guild(guild).ROLE.set(roles)
         await ctx.send(role.name + _(" role removed from the autorole."))
 
-    @autorole.group()
-    @checks.admin_or_permissions(manage_roles=True)
-    async def agreement(self, ctx):
-        """
-            Set the channel and message that will be used for accepting the rules.
+    # @autorole.group()
+    # @checks.admin_or_permissions(manage_roles=True)
+    # async def agreement(self, ctx):
+    #     """
+    #         Set the channel and message that will be used for accepting the rules.
 
-            `channel` is the channel they must type the key in to get the role.
-            `key` is the message they must type to gain access and must be in quotes.
-            `msg` is the message DM'd to them when they join.
+    #         `channel` is the channel they must type the key in to get the role.
+    #         `key` is the message they must type to gain access and must be in quotes.
+    #         `msg` is the message DM'd to them when they join.
 
-            `{key}` must be included in the message so a user knows what to type in the channel.
+    #         `{key}` must be included in the message so a user knows what to type in the channel.
 
-            Optional additions to the message include:
-            `{channel}` Mentions the channel where they must include the agreement message.
-            `{mention}` Mentions the user incase they have DM permissions turned off this should be used.
-            `{name}` Says the member name if you don't want to ping them.
-            `{guild}` Says the servers current name.
+    #         Optional additions to the message include:
+    #         `{channel}` Mentions the channel where they must include the agreement message.
+    #         `{mention}` Mentions the user incase they have DM permissions turned off this should be used.
+    #         `{name}` Says the member name if you don't want to ping them.
+    #         `{guild}` Says the servers current name.
 
-            Entering nothing will disable these.
-        """
-        pass
+    #         Entering nothing will disable these.
+    #     """
+    #     pass
 
-    @agreement.command(name="channel")
-    @checks.admin_or_permissions(manage_roles=True)
-    async def set_agreement_channel(
-        self, ctx: commands.context, channel: discord.TextChannel = None
-    ):
-        """
-            Set the agreement channel
+    # @agreement.command(name="channel")
+    # @checks.admin_or_permissions(manage_roles=True)
+    # async def set_agreement_channel(
+    #     self, ctx: commands.context, channel: discord.TextChannel = None
+    # ):
+    #     """
+    #         Set the agreement channel
 
-            Entering nothing will clear this.
-        """
-        guild = ctx.message.guild
-        if await self.config.guild(guild).ROLE() == []:
-            await ctx.send(_("No roles have been set for autorole."))
-            return
-        if not await self.config.guild(guild).ENABLED():
-            await ctx.send(_("Autorole has been disabled, enable it first."))
-            return
-        if channel is None:
-            await self.config.guild(guild).AGREE_CHANNEL.set(None)
-            await ctx.send(_("Agreement channel cleared"))
-        else:
-            await self.config.guild(guild).AGREE_CHANNEL.set(channel.id)
-            await ctx.send(_("Agreement channel set to ") + channel.mention)
+    #         Entering nothing will clear this.
+    #     """
+    #     guild = ctx.message.guild
+    #     if await self.config.guild(guild).ROLE() == []:
+    #         await ctx.send(_("No roles have been set for autorole."))
+    #         return
+    #     if not await self.config.guild(guild).ENABLED():
+    #         await ctx.send(_("Autorole has been disabled, enable it first."))
+    #         return
+    #     if channel is None:
+    #         await self.config.guild(guild).AGREE_CHANNEL.set(None)
+    #         await ctx.send(_("Agreement channel cleared"))
+    #     else:
+    #         await self.config.guild(guild).AGREE_CHANNEL.set(channel.id)
+    #         await ctx.send(_("Agreement channel set to ") + channel.mention)
 
-    @agreement.command(name="key")
-    @checks.admin_or_permissions(manage_roles=True)
-    async def set_agreement_key(self, ctx, *, key: str = None):
-        """
-            Set the agreement key
+    # @agreement.command(name="key")
+    # @checks.admin_or_permissions(manage_roles=True)
+    # async def set_agreement_key(self, ctx, *, key: str = None):
+    #     """
+    #         Set the agreement key
 
-            Entering nothing will clear this.
-        """
+    #         Entering nothing will clear this.
+    #     """
 
-        guild = ctx.message.guild
-        if await self.config.guild(guild).ROLE() == []:
-            await ctx.send(_("No roles have been set for autorole."))
-            return
-        if not await self.config.guild(guild).ENABLED():
-            await ctx.send(_("Autorole has been disabled, enable it first."))
-            return
-        if key is None:
-            await self.config.guild(guild).AGREE_KEY.set(None)
-            await ctx.send(_("Agreement key cleared"))
-        else:
-            await self.config.guild(guild).AGREE_KEY.set(key)
-            await ctx.send(_("Agreement key set to ") + key)
+    #     guild = ctx.message.guild
+    #     if await self.config.guild(guild).ROLE() == []:
+    #         await ctx.send(_("No roles have been set for autorole."))
+    #         return
+    #     if not await self.config.guild(guild).ENABLED():
+    #         await ctx.send(_("Autorole has been disabled, enable it first."))
+    #         return
+    #     if key is None:
+    #         await self.config.guild(guild).AGREE_KEY.set(None)
+    #         await ctx.send(_("Agreement key cleared"))
+    #     else:
+    #         await self.config.guild(guild).AGREE_KEY.set(key)
+    #         await ctx.send(_("Agreement key set to ") + key)
 
-    @agreement.command(name="message", aliases=["msg"])
-    @checks.admin_or_permissions(manage_roles=True)
-    async def set_agreement_msg(self, ctx, *, message: str = None):
-        """
-            Set the agreement message
-            `{key}` must be included in the message so a user knows what to type in the channel.
+    # @agreement.command(name="message", aliases=["msg"])
+    # @checks.admin_or_permissions(manage_roles=True)
+    # async def set_agreement_msg(self, ctx, *, message: str = None):
+    #     """
+    #         Set the agreement message
+    #         `{key}` must be included in the message so a user knows what to type in the channel.
 
-            Optional additions to the message include:
-            `{channel}` Mentions the channel where they must include the agreement message.
-            `{mention}` Mentions the user incase they have DM permissions turned off this should be used.
-            `{name}` Says the member name if you don't want to ping them.
-            `{guild}` Says the servers current name.
+    #         Optional additions to the message include:
+    #         `{channel}` Mentions the channel where they must include the agreement message.
+    #         `{mention}` Mentions the user incase they have DM permissions turned off this should be used.
+    #         `{name}` Says the member name if you don't want to ping them.
+    #         `{guild}` Says the servers current name.
 
-            Entering nothing will clear this.
-        """
-        guild = ctx.message.guild
-        if await self.config.guild(guild).ROLE() == []:
-            await ctx.send(_("No roles have been set for autorole."))
-            return
-        if not await self.config.guild(guild).ENABLED():
-            await ctx.send(_("Autorole has been disabled, enable it first."))
-            return
-        if message is None:
-            await self.config.guild(guild).AGREE_MSG.set(None)
-            await ctx.send(_("Agreement message cleared"))
-        else:
-            await self.config.guild(guild).AGREE_MSG.set(message)
-            await ctx.send(_("Agreement key set to ") + message)
+    #         Entering nothing will clear this.
+    #     """
+    #     guild = ctx.message.guild
+    #     if await self.config.guild(guild).ROLE() == []:
+    #         await ctx.send(_("No roles have been set for autorole."))
+    #         return
+    #     if not await self.config.guild(guild).ENABLED():
+    #         await ctx.send(_("Autorole has been disabled, enable it first."))
+    #         return
+    #     if message is None:
+    #         await self.config.guild(guild).AGREE_MSG.set(None)
+    #         await ctx.send(_("Agreement message cleared"))
+    #     else:
+    #         await self.config.guild(guild).AGREE_MSG.set(message)
+    #         await ctx.send(_("Agreement key set to ") + message)
 
-    @agreement.command(name="setup")
-    @checks.admin_or_permissions(manage_roles=True)
-    async def agreement_setup(
-        self, ctx, channel: discord.TextChannel = None, key: str = None, *, msg: str = None
-    ):
-        """
-            Set the channel and message that will be used for accepting the rules.
+    # @agreement.command(name="setup")
+    # @checks.admin_or_permissions(manage_roles=True)
+    # async def agreement_setup(
+    #     self, ctx, channel: discord.TextChannel = None, key: str = None, *, msg: str = None
+    # ):
+    #     """
+    #         Set the channel and message that will be used for accepting the rules.
 
-            `channel` is the channel they must type the key in to get the role.
-            `key` is the message they must type to gain access and must be in quotes.
-            `msg` is the message DM'd to them when they join.
+    #         `channel` is the channel they must type the key in to get the role.
+    #         `key` is the message they must type to gain access and must be in quotes.
+    #         `msg` is the message DM'd to them when they join.
 
-            `{key}` must be included in the message so a user knows what to type in the channel.
+    #         `{key}` must be included in the message so a user knows what to type in the channel.
 
-            Optional additions to the message include:
-            `{channel}` Mentions the channel where they must include the agreement message.
-            `{mention}` Mentions the user incase they have DM permissions turned off this should be used.
-            `{name}` Says the member name if you don't want to ping them.
-            `{guild}` Says the servers current name.
+    #         Optional additions to the message include:
+    #         `{channel}` Mentions the channel where they must include the agreement message.
+    #         `{mention}` Mentions the user incase they have DM permissions turned off this should be used.
+    #         `{name}` Says the member name if you don't want to ping them.
+    #         `{guild}` Says the servers current name.
 
-            Entering nothing will disable this.
-        """
-        guild = ctx.message.guild
-        if await self.config.guild(guild).ROLE() == []:
-            await ctx.send(_("No roles have been set for autorole."))
-            return
-        if not await self.config.guild(guild).ENABLED():
-            await ctx.send(_("Autorole has been disabled, enable it first."))
-            return
-        if channel is None:
-            await self.config.guild(guild).AGREE_CHANNEL.set(None)
-            await self.config.guild(guild).AGREE_MSG.set(None)
-            await self.config.guild(guild).AGREE_KEY.set(None)
-            await ctx.send(_("Agreement channel cleared"))
-        else:
-            await self.config.guild(guild).AGREE_CHANNEL.set(channel.id)
-            await self.config.guild(guild).AGREE_MSG.set(msg)
-            await self.config.guild(guild).AGREE_KEY.set(key)
-            await ctx.send(_("Agreement channel set to ") + channel.mention)
+    #         Entering nothing will disable this.
+    #     """
+    #     guild = ctx.message.guild
+    #     if await self.config.guild(guild).ROLE() == []:
+    #         await ctx.send(_("No roles have been set for autorole."))
+    #         return
+    #     if not await self.config.guild(guild).ENABLED():
+    #         await ctx.send(_("Autorole has been disabled, enable it first."))
+    #         return
+    #     if channel is None:
+    #         await self.config.guild(guild).AGREE_CHANNEL.set(None)
+    #         await self.config.guild(guild).AGREE_MSG.set(None)
+    #         await self.config.guild(guild).AGREE_KEY.set(None)
+    #         await ctx.send(_("Agreement channel cleared"))
+    #     else:
+    #         await self.config.guild(guild).AGREE_CHANNEL.set(channel.id)
+    #         await self.config.guild(guild).AGREE_MSG.set(msg)
+    #         await self.config.guild(guild).AGREE_KEY.set(key)
+    #         await ctx.send(_("Agreement channel set to ") + channel.mention)
