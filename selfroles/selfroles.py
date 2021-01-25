@@ -1,3 +1,4 @@
+from typing import cast
 import discord
 from redbot.core import commands, checks, Config
 from redbot.core.i18n import Translator, cog_i18n
@@ -39,7 +40,7 @@ class SelfRoles(commands.Cog):
     async def get_colour(self, channel):
         return await RedBase.get_embed_colour(self.bot, channel)
     
-    async def give_role(self, role, member):
+    async def give_role(self, role: discord.Role, member: discord.Member):
         await member.add_roles(role, reason="Self give")
         return
 
@@ -48,11 +49,11 @@ class SelfRoles(commands.Cog):
         return
 
     @listener()
-    async def on_raw_reaction_add(self, payload):
-        poll_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        if not poll_message.embeds:
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        react_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        if not react_message.embeds:
             return
-        embed = poll_message.embeds[0]
+        embed = react_message.embeds[0]
         try:
             if not embed.footer.text.startswith('React ID:'):
                 return
@@ -64,15 +65,15 @@ class SelfRoles(commands.Cog):
         guild = self.bot.get_guild(payload.guild_id)
         member = guild.get_member(payload.user_id)
         if str(payload.emoji) in opt_dict.keys():
-            role = discord.utils.get(guild.roles, name=opt_dict[str(payload.emoji)])
+            role = guild.get_role(int(opt_dict[str(payload.emoji)].split('&')[1].split('>')[0]))
             await self.give_role(role, member)
 
     @listener()
-    async def on_raw_reaction_remove(self, payload):
-        poll_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        if not poll_message.embeds:
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        react_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        if not react_message.embeds:
             return
-        embed = poll_message.embeds[0]
+        embed = react_message.embeds[0]
         try:
             if not embed.footer.text.startswith('React ID:'):
                 return
@@ -81,10 +82,10 @@ class SelfRoles(commands.Cog):
         unformatted_options = [x.strip() for x in embed.description.split('\n')]
         opt_dict = {x[:2]: x[3:] for x in unformatted_options} if unformatted_options[0][0] == '1' \
             else {x[:1]: x[2:] for x in unformatted_options}
-        guild = self.bot.get_guild(payload.guild_id)
+        guild = self.bot.get_guild(payload.guild_id)     
         member = guild.get_member(payload.user_id)
         if str(payload.emoji) in opt_dict.keys():
-            role = discord.utils.get(guild.roles, name=opt_dict[str(payload.emoji)])
+            role = guild.get_role(int(opt_dict[str(payload.emoji)].split('&')[1].split('>')[0]))
             await self.remove_role(role, member)
 
     @commands.guild_only()       
