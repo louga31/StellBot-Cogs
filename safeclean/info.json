@@ -1,28 +1,24 @@
 {
     "author" : [
-        "Lunar Dust",
-        "TrustyJAID"
+        "louga31"
     ],
     "bot_version" : [
         3,
         0,
         0
     ],
-    "description" : "Automatically apply a role to new users",
+    "description" : "A new clean method that bypass time limits",
     "disabled" : false,
     "hidden" : false,
-    "install_msg" : "autorole",
+    "install_msg" : "safeclean",
     "min_python_version" : [
         3,
         6,
         2
     ],
-    "name" : "autorole",
-    "permissions" : [
-        "manage_roles"
-    ],
+    "name" : "safeclean",
     "requirements" : [],
-    "short" : "Automatically apply a role to new users",
+    "short" : "A new clean method that bypass time limits",
     "tags" : [],
     "type" : "COG"
 }
