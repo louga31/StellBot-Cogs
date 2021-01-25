@@ -178,6 +178,7 @@ class Poll(commands.Cog):
         for poll in self.polls:
             if poll["id"] == id:
                 pollers = poll['pollers']
+                del pollers[str(self.bot.user.id)]
                 embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title="Résultats du vote (Message 1)")
                 for index, (x, y) in enumerate(pollers.items()):
                     if index%20 == 0 and index != 0:
@@ -198,4 +199,7 @@ class Poll(commands.Cog):
     @commands.command(pass_context=True)
     async def say(self, ctx, *message):
         await ctx.message.delete()
-        await ctx.send(message)
+        string = ""
+        for word in message:
+            string += f"{word} "
+        await ctx.send(string)
