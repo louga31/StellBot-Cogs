@@ -1,24 +1,6 @@
-from typing import cast
 import discord
-from redbot.core import commands, checks, Config
-from redbot.core.i18n import Translator, cog_i18n
+from redbot.core import commands
 from redbot.core.bot import RedBase
-import random
-import string
-import aiohttp
-import asyncio
-import base64
-import datetime
-import math
-from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
-from redbot.core.utils.menus import (
-    menu,
-    DEFAULT_CONTROLS,
-    prev_page,
-    next_page,
-    close_menu,
-    start_adding_reactions,
-)
 import locale
 locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
 
@@ -34,7 +16,6 @@ class SelfRoles(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, 45463543548)
         self.users = {}
 
     async def get_colour(self, channel):

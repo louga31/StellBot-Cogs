@@ -1,24 +1,8 @@
 from typing import cast
 import discord
-from redbot.core import commands, checks, Config
-from redbot.core.i18n import Translator, cog_i18n
-from redbot.core.bot import RedBase
-import random
-import string
-import aiohttp
 import asyncio
-import base64
-import datetime
-import math
-from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
-from redbot.core.utils.menus import (
-    menu,
-    DEFAULT_CONTROLS,
-    prev_page,
-    next_page,
-    close_menu,
-    start_adding_reactions,
-)
+from redbot.core import commands, Config
+from redbot.core.bot import RedBase
 import locale
 locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
 
@@ -35,8 +19,11 @@ class Roles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, 72451682326428)
-        self.users = {}
+        asyncio.ensure_future(self.set_roles())
 
+    async def set_roles(self):
+        self.roles = await self.config.ROLES()
+    
     async def get_colour(self, channel):
         return await RedBase.get_embed_colour(self.bot, channel)
     
@@ -50,63 +37,53 @@ class Roles(commands.Cog):
 
     @listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-        react_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        if not react_message.embeds:
-            return
-        embed = react_message.embeds[0]
-        try:
-            if not embed.footer.text.startswith('React ID:'):
-                return
-        except:
-            return
-        unformatted_options = [x.strip() for x in embed.description.split('\n')]
-        opt_dict = {x[:2]: x[3:] for x in unformatted_options} if unformatted_options[0][0] == '1' \
-            else {x[:1]: x[2:] for x in unformatted_options}
-        guild = self.bot.get_guild(payload.guild_id)
-        member = guild.get_member(payload.user_id)
-        if str(payload.emoji) in opt_dict.keys():
-            role = guild.get_role(int(opt_dict[str(payload.emoji)].split('&')[1].split('>')[0]))
-            await self.give_role(role, member)
+        # react_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        # if not react_message.embeds:
+        #     return
+        # embed = react_message.embeds[0]
+        # try:
+        #     if not embed.footer.text.startswith('React ID:'):
+        #         return
+        # except:
+        #     return
+        # unformatted_options = [x.strip() for x in embed.description.split('\n')]
+        # opt_dict = {x[:2]: x[3:] for x in unformatted_options} if unformatted_options[0][0] == '1' \
+        #     else {x[:1]: x[2:] for x in unformatted_options}
+        # guild = self.bot.get_guild(payload.guild_id)
+        # member = guild.get_member(payload.user_id)
+        # if str(payload.emoji) in opt_dict.keys():
+        #     role = guild.get_role(int(opt_dict[str(payload.emoji)].split('&')[1].split('>')[0]))
+        #     await self.give_role(role, member)
+        pass
 
     @listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-        react_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        if not react_message.embeds:
-            return
-        embed = react_message.embeds[0]
-        try:
-            if not embed.footer.text.startswith('React ID:'):
-                return
-        except:
-            return
-        unformatted_options = [x.strip() for x in embed.description.split('\n')]
-        opt_dict = {x[:2]: x[3:] for x in unformatted_options} if unformatted_options[0][0] == '1' \
-            else {x[:1]: x[2:] for x in unformatted_options}
-        guild = self.bot.get_guild(payload.guild_id)     
-        member = guild.get_member(payload.user_id)
-        if str(payload.emoji) in opt_dict.keys():
-            role = guild.get_role(int(opt_dict[str(payload.emoji)].split('&')[1].split('>')[0]))
-            await self.remove_role(role, member)
+        # react_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        # if not react_message.embeds:
+        #     return
+        # embed = react_message.embeds[0]
+        # try:
+        #     if not embed.footer.text.startswith('React ID:'):
+        #         return
+        # except:
+        #     return
+        # unformatted_options = [x.strip() for x in embed.description.split('\n')]
+        # opt_dict = {x[:2]: x[3:] for x in unformatted_options} if unformatted_options[0][0] == '1' \
+        #     else {x[:1]: x[2:] for x in unformatted_options}
+        # guild = self.bot.get_guild(payload.guild_id)     
+        # member = guild.get_member(payload.user_id)
+        # if str(payload.emoji) in opt_dict.keys():
+        #     role = guild.get_role(int(opt_dict[str(payload.emoji)].split('&')[1].split('>')[0]))
+        #     await self.remove_role(role, member)
+        pass
 
     @commands.guild_only()       
     @commands.command(pass_context=True)
-    async def selfroles(self, ctx, *options: str):
+    async def rolemessage(self, ctx, messageid: int, *roles: str):
         await ctx.message.delete()
-        if len(options) < 1:
+        if len(roles) < 1:
             await ctx.send('You need at least 1 role!')
             return
-        if len(options) > 10:
+        if len(roles) > 10:
             await ctx.send('You cannot make a selfrole message for more than 10 roles!')
             return
-
-        else:
-            reactions = ['1⃣', '2⃣', '3⃣', '4⃣', '5⃣', '6⃣', '7⃣', '8⃣', '9⃣', '🔟']
-        description = ""
-        for x, option in enumerate(options):
-            description += '\n {} {}'.format(reactions[x], option)
-        embed = discord.Embed(colour=await self.get_colour(ctx.message.guild), title="Réagissez à ce message pour obtenir vos roles", description=''.join(description))
-        react_message = await ctx.send(embed=embed)
-        for reaction in reactions[:len(options)]:
-            await react_message.add_reaction(reaction)
-        embed.set_footer(text='React ID: {}'.format(react_message.id))
-        await react_message.edit(embed=embed)
