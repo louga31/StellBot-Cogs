@@ -210,11 +210,13 @@ class Poll(commands.Cog):
     async def moveall(self, ctx: commands.Context):
         await ctx.message.delete()
         channel = ctx.message.author.voice.channel
-        channel = cast(discord.VoiceChannel, channel)
+        if channel is None:
+            embed = discord.Embed(colour=0xff0000, title=f"You are not in a voice channel")
+            await ctx.send(embed=embed)
+            return
         guild = ctx.guild
-        guild = cast(discord.Guild, guild)
         async for member in guild.fetch_members(limit=None):
-            member = cast(discord.Member, member)
-            member.voice.move_to(channel)
+            if not member.voice.channel is None:
+                member.move_to(channel)
         embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title=f"I moved everyone to {channel.name}")
         await ctx.send(embed=embed)
