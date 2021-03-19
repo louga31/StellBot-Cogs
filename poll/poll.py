@@ -1,5 +1,6 @@
 import asyncio
 import locale
+from typing import cast
 from redbot.core import commands, Config
 from redbot.core.bot import RedBase
 import discord
@@ -203,3 +204,17 @@ class Poll(commands.Cog):
         for word in message:
             string += f"{word} "
         await ctx.send(string)
+    
+    @commands.guild_only()
+    @commands.command(pass_context=True)
+    async def moveall(self, ctx: commands.Context):
+        await ctx.message.delete()
+        channel = ctx.message.author.voice.channel
+        channel = cast(discord.VoiceChannel, channel)
+        guild = ctx.guild
+        guild = cast(discord.Guild, guild)
+        async for member in guild.fetch_members(limit=None):
+            member = cast(discord.Member, member)
+            member.voice.move_to(channel)
+        embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title=f"I moved everyone to {channel.name}")
+        await ctx.send(embed=embed)

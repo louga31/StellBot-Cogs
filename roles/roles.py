@@ -24,16 +24,14 @@ def from_int(x: Any) -> int:
     assert isinstance(x, int) and not isinstance(x, bool)
     return x
 
-def from_role(guild: discord.Guild, x: Any) -> discord.Role:
-    assert isinstance(x, int) and not isinstance(x, bool)
-    return guild.get_role(x)
+def from_roles(guild: discord.Guild, x: Any) -> discord.Role:
+    return [guild.get_role(y) for y in x]
 
-def from_emoji(guild: discord.Guild, x: Any) -> discord.Emoji:
-    assert isinstance(x, int) and not isinstance(x, bool)
-    return guild.fetch_emoji(x)
+async def from_emojis(guild: discord.Guild, x: Any) -> discord.Emoji:
+    return [await guild.fetch_emoji(y) for y in x]
 
 def to_id(x: Any) -> int:
-    assert isinstance(x, discord.Role) or isinstance(x, discord.Emoji)
+    assert isinstance(x, discord.Role) or isinstance(x, discord.Emoji) or isinstance(x, discord.PartialEmoji)
     return x.id
 
 @dataclass
@@ -43,10 +41,10 @@ class RoleMessage:
     status: int
 
     @staticmethod
-    def from_dict(obj: Any) -> 'RoleMessage':
+    async def from_dict(guild: discord.Guild, obj: Any) -> 'RoleMessage':
         assert isinstance(obj, dict)
-        roles = from_list(from_role, obj.get("roles"))
-        emojis = from_list(from_emoji, obj.get("emojis"))
+        roles = from_roles(guild, obj.get("roles"))
+        emojis = await from_emojis(guild, obj.get("emojis"))
         status = from_int(obj.get("status"))
         return RoleMessage(roles, emojis, status)
 
@@ -66,11 +64,17 @@ class Roles(commands.Cog):
         asyncio.ensure_future(self.set_roles())
 
     async def set_roles(self):
+        await asyncio.sleep(1)
         self.role_messages = await self.config.role_messages()
         if self.role_messages is None:
             self.role_messages = {}
             await self.config.role_messages.set(self.role_messages)
+        for messageid, config in self.role_messages.items():
+            self.role_messages[messageid] = await RoleMessage.from_dict(self.bot.get_guild(705722982814711808), config)
 
+    async def save_config(self):
+        await self.config.role_messages.set({messageid:config.to_dict() for messageid, config in self.role_messages.items()})
+    
     async def get_colour(self, channel):
         return await RedBase.get_embed_colour(self.bot, channel)
     
@@ -78,59 +82,73 @@ class Roles(commands.Cog):
         await member.add_roles(role, reason='Self give')
         return
 
-    async def remove_role(self, role, member):
+    async def remove_role(self, role: discord.Role, member: discord.Member):
         await member.remove_roles(role, reason='Self remove')
         return
     
-    async def process_step(self):
-        return
+    async def process_config_step(self, channel: discord.TextChannel, emoji: discord.PartialEmoji, self_message: discord.PartialMessage, step_message: discord.Message):
+        await self_message.add_reaction(emoji)
+        await step_message.clear_reactions()
+        self_id = str(self_message.id)
+
+        self.role_messages[self_id].status += 1
+        self.role_messages[self_id].emojis.append(emoji)
+        await self.save_config()
+        
+        if self.role_messages[self_id].status < len(self.role_messages[self_id].roles):
+            embed = discord.Embed(colour=await self.get_colour(channel), description=f"Merci d'ajouter à ce message la réaction que vous voulez pour le rôle {self.role_messages[self_id].roles[self.role_messages[self_id].status].mention}")
+            embed.set_footer(text=f'Self ID: {self_id}')
+            await step_message.edit(embed=embed)
+        else:
+            await step_message.delete()
 
     @listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-        # react_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        # if not react_message.embeds:
-        #     return
-        # embed = react_message.embeds[0]
-        # try:
-        #     if not embed.footer.text.startswith('React ID:'):
-        #         return
-        # except:
-        #     return
-        # unformatted_options = [x.strip() for x in embed.description.split('\n')]
-        # opt_dict = {x[:2]: x[3:] for x in unformatted_options} if unformatted_options[0][0] == '1' \
-        #     else {x[:1]: x[2:] for x in unformatted_options}
-        # guild = self.bot.get_guild(payload.guild_id)
-        # member = guild.get_member(payload.user_id)
-        # if str(payload.emoji) in opt_dict.keys():
-        #     role = guild.get_role(int(opt_dict[str(payload.emoji)].split('&')[1].split('>')[0]))
-        #     await self.give_role(role, member)
-        pass
-
+        guild = cast(discord.Guild, self.bot.get_guild(payload.guild_id))
+        channel = cast(discord.TextChannel, guild.get_channel(payload.channel_id))
+        react_message = cast(discord.Message, await channel.fetch_message(payload.message_id))
+        
+        if not react_message.embeds:
+            react_id = str(react_message.id)
+            if not react_id in self.role_messages:
+                return
+            if not payload.emoji in self.role_messages[react_id].emojis:
+                return
+            await self.give_role(self.role_messages[react_id].roles[self.role_messages[react_id].emojis.index(payload.emoji)], guild.get_member(payload.user_id))
+            return
+        embed = react_message.embeds[0]
+        try:
+            if not embed.footer.text.startswith('Self ID:'):
+                return
+        except:
+            return
+        
+        self_message = cast(discord.Message, channel.get_partial_message(embed.footer.text.split(': ')[1]))
+        await self.process_config_step(guild.get_channel(payload.channel_id), payload.emoji, self_message, react_message)
+        
     @listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-        # react_message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        # if not react_message.embeds:
-        #     return
-        # embed = react_message.embeds[0]
-        # try:
-        #     if not embed.footer.text.startswith('React ID:'):
-        #         return
-        # except:
-        #     return
-        # unformatted_options = [x.strip() for x in embed.description.split('\n')]
-        # opt_dict = {x[:2]: x[3:] for x in unformatted_options} if unformatted_options[0][0] == '1' \
-        #     else {x[:1]: x[2:] for x in unformatted_options}
-        # guild = self.bot.get_guild(payload.guild_id)     
-        # member = guild.get_member(payload.user_id)
-        # if str(payload.emoji) in opt_dict.keys():
-        #     role = guild.get_role(int(opt_dict[str(payload.emoji)].split('&')[1].split('>')[0]))
-        #     await self.remove_role(role, member)
-        pass
-        
+        guild = cast(discord.Guild, self.bot.get_guild(payload.guild_id))
+        channel = cast(discord.TextChannel, guild.get_channel(payload.channel_id))
+        react_message = cast(discord.Message, await channel.fetch_message(payload.message_id))
+        react_id = str(react_message.id)
+        if not react_id in self.role_messages:
+            return
+        if not payload.emoji in self.role_messages[react_id].emojis:
+            return
+        await self.remove_role(self.role_messages[react_id].roles[self.role_messages[react_id].emojis.index(payload.emoji)], guild.get_member(payload.user_id))
+    
+    @commands.guild_only()
+    @commands.command(pass_context=True)
+    async def cleanself(self, ctx):
+        self.role_messages = {}
+        await self.config.role_messages.set(self.role_messages)
+        embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title="SelfRoles cleaned")
+        await ctx.send(embed=embed)
+    
     @commands.guild_only()       
     @commands.command(pass_context=True)
     async def rolemessage(self, ctx, message: discord.Message, *roles: discord.Role):
-        print(roles)
         await ctx.message.delete()
         if len(roles) < 1:
             embed=discord.Embed(title='You need at least 1 role!', color=0xff0000)
@@ -140,8 +158,10 @@ class Roles(commands.Cog):
             embed=discord.Embed(title='You cannot make a selfrole message for more than 10 roles!', color=0xff0000)
             await ctx.send(embed=embed)
             return
-        self.role_messages[message.id] = RoleMessage(list(roles), [], 1).to_dict()
-        await self.config.role_messages.set(self.role_messages)
-        print(self.role_messages)
-        embed = discord.Embed(colour=await self.get_colour(message.channel), title=f"Merci d'ajouter à ce message la réaction que vous voulez pour le rôle {self.role_messages[message.id].roles[self.role_messages[message.id].status]}")
+        message_id = str(message.id)
+        self.role_messages[message_id] = RoleMessage(list(roles), [], 0)
+        await self.save_config()
+        embed = discord.Embed(colour=await self.get_colour(message.channel), description=f"Merci d'ajouter à ce message la réaction que vous voulez pour le rôle {self.role_messages[message_id].roles[self.role_messages[message_id].status].mention}")
+        embed.set_footer(text=f'Self ID: {message_id}')
         await message.channel.send(embed=embed)
+        
