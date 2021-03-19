@@ -218,5 +218,5 @@ class Poll(commands.Cog):
         async for member in guild.fetch_members(limit=None):
             if member.id != ctx.message.author.id and not member.voice is None:
                 await member.move_to(channel)
-        embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title=f"I moved everyone to {channel.name}")
+        embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title=f"I moved everyone to {channel.mention}")
         await ctx.send(embed=embed)
