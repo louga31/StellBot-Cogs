@@ -208,7 +208,6 @@ class Poll(commands.Cog):
     @commands.guild_only()
     @commands.command(pass_context=True)
     async def moveall(self, ctx: commands.Context):
-        await ctx.message.delete()
         if ctx.message.author.voice is None:
             embed = discord.Embed(colour=0xff0000, title=f"You are not in a voice channel")
             await ctx.send(embed=embed)
