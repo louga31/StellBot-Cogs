@@ -193,6 +193,7 @@ class Autorole(commands.Cog):
                 
     @commands.group(name="autorole")
     @commands.bot_has_permissions(manage_roles=True)
+    @checks.admin()
     async def autorole(self, ctx):
         """
             Change settings for autorole

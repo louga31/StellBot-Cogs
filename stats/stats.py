@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import asyncio
 import locale
 from dateutil.relativedelta import relativedelta
-from redbot.core import Config, commands
+from redbot.core import checks, Config, commands
 from redbot.core.data_manager import cog_data_path
 import discord
 import apsw
@@ -48,6 +48,7 @@ class Stats(commands.Cog):
             await ctx.send(embed=em)
 
     @commands.command(pass_context=True)
+    @checks.admin()
     async def stats_admin(self, ctx):
         """Affiche les statistiques d'un utilisateur"""
         users = ctx.message.mentions

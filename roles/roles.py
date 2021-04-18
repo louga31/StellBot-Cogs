@@ -138,16 +138,17 @@ class Roles(commands.Cog):
             return
         await self.remove_role(self.role_messages[react_id].roles[self.role_messages[react_id].emojis.index(payload.emoji)], guild.get_member(payload.user_id))
     
-    @commands.guild_only()
     @commands.command(pass_context=True)
+    @commands.guild_only()
+    @checks.owner()
     async def cleanself(self, ctx):
         self.role_messages = {}
         await self.config.role_messages.set(self.role_messages)
         embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title="SelfRoles cleaned")
         await ctx.send(embed=embed)
     
-    @commands.guild_only()       
     @commands.command(pass_context=True)
+    @commands.guild_only()
     async def rolemessage(self, ctx, message: discord.Message, *roles: discord.Role):
         await ctx.message.delete()
         if len(roles) < 1:

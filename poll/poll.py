@@ -1,7 +1,7 @@
 import asyncio
 import locale
 from typing import cast
-from redbot.core import commands, Config
+from redbot.core import checks, commands, Config
 from redbot.core.bot import RedBase
 import discord
 locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
@@ -96,8 +96,9 @@ class Poll(commands.Cog):
         await poll_message.remove_reaction(payload.emoji, member)
         await self.config.POLLS.set(self.polls)
 
-    @commands.guild_only()
     @commands.command(pass_context=True)
+    @commands.guild_only()
+    @checks.admin()
     async def poll(self, ctx, question, *options: str):
         await ctx.message.delete()
         if len(options) <= 1:
@@ -135,8 +136,9 @@ class Poll(commands.Cog):
         self.polls.append({"id": f"{react_message.id}", "options": emojis, "pollers": pollers, "multi": False})
         await self.config.POLLS.set(self.polls)
     
-    @commands.guild_only()
     @commands.command(pass_context=True)
+    @commands.guild_only()
+    @checks.admin()
     async def multi_poll(self, ctx, question, *options: str):
         await ctx.message.delete()
         if len(options) <= 1:
@@ -175,6 +177,7 @@ class Poll(commands.Cog):
         await self.config.POLLS.set(self.polls)
 
     @commands.command(pass_context=True)
+    @checks.owner()
     async def poll_result(self, ctx, id: str):
         for poll in self.polls:
             if poll["id"] == id:
@@ -190,14 +193,16 @@ class Poll(commands.Cog):
                 return
 
     @commands.command(pass_context=True)
+    @checks.owner()
     async def poll_clean(self, ctx):
         self.polls = []
         await self.config.POLLS.set(self.polls)
         embed = discord.Embed(colour=await self.get_colour(ctx.message.channel), title="Polls cleaned")
         await ctx.send(embed=embed)
 
-    @commands.guild_only()
     @commands.command(pass_context=True)
+    @commands.guild_only()
+    @checks.owner()
     async def say(self, ctx, *message):
         await ctx.message.delete()
         string = ""
@@ -205,8 +210,9 @@ class Poll(commands.Cog):
             string += f"{word} "
         await ctx.send(string)
     
-    @commands.guild_only()
     @commands.command(pass_context=True)
+    @commands.guild_only()
+    @checks.owner()
     async def moveall(self, ctx: commands.Context):
         if ctx.message.author.voice is None:
             embed = discord.Embed(colour=0xff0000, title=f"You are not in a voice channel")

@@ -104,7 +104,7 @@ class SafeClean(commands.Cog):
         return collected
 
     @commands.group()
-    @checks.mod_or_permissions(manage_messages=True)
+    @checks.admin_or_permissions(manage_messages=True)
     async def safeclean(self, ctx: commands.Context):
         """Delete messages."""
         pass
