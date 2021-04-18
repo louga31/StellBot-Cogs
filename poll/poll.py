@@ -177,7 +177,7 @@ class Poll(commands.Cog):
         await self.config.POLLS.set(self.polls)
 
     @commands.command(pass_context=True)
-    @checks.owner()
+    @checks.is_owner()
     async def poll_result(self, ctx, id: str):
         for poll in self.polls:
             if poll["id"] == id:
@@ -193,7 +193,7 @@ class Poll(commands.Cog):
                 return
 
     @commands.command(pass_context=True)
-    @checks.owner()
+    @checks.is_owner()
     async def poll_clean(self, ctx):
         self.polls = []
         await self.config.POLLS.set(self.polls)
@@ -202,7 +202,7 @@ class Poll(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.guild_only()
-    @checks.owner()
+    @checks.is_owner()
     async def say(self, ctx, *message):
         await ctx.message.delete()
         string = ""
@@ -212,7 +212,7 @@ class Poll(commands.Cog):
     
     @commands.command(pass_context=True)
     @commands.guild_only()
-    @checks.owner()
+    @checks.is_owner()
     async def moveall(self, ctx: commands.Context):
         if ctx.message.author.voice is None:
             embed = discord.Embed(colour=0xff0000, title=f"You are not in a voice channel")

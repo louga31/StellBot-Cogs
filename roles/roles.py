@@ -5,7 +5,7 @@ import asyncio
 import locale
 from discord import embeds
 from discord import reaction
-from redbot.core import commands, Config
+from redbot.core import checks, commands, Config
 from redbot.core.bot import RedBase
 
 T = TypeVar("T")
