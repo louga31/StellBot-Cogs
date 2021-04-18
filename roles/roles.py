@@ -149,6 +149,7 @@ class Roles(commands.Cog):
     
     @commands.command(pass_context=True)
     @commands.guild_only()
+    @checks.admin()
     async def rolemessage(self, ctx, message: discord.Message, *roles: discord.Role):
         await ctx.message.delete()
         if len(roles) < 1:
