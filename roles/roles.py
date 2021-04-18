@@ -140,7 +140,7 @@ class Roles(commands.Cog):
     
     @commands.command(pass_context=True)
     @commands.guild_only()
-    @checks.owner()
+    @checks.is_owner()
     async def cleanself(self, ctx):
         self.role_messages = {}
         await self.config.role_messages.set(self.role_messages)
