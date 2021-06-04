@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Any, TypeVar, Callable, Type, cast
+from typing import List, Any, TypeVar, Callable, Type, cast, Union
 import discord
 import asyncio
 import locale
@@ -37,7 +37,7 @@ def to_id(x: Any) -> int:
 @dataclass
 class RoleMessage:
     roles: List[discord.Role]
-    emojis: List[discord.Emoji]
+    emojis: List[Union[discord.PartialEmoji, discord.Emoji]]
     status: int
 
     @staticmethod
@@ -88,14 +88,14 @@ class Roles(commands.Cog):
     
     async def process_config_step(self, channel: discord.TextChannel, emoji: discord.PartialEmoji, self_message: discord.PartialMessage, step_message: discord.Message):
         await self_message.add_reaction(emoji)
-        await step_message.clear_reactions()
         self_id = str(self_message.id)
-
+        
         self.role_messages[self_id].status += 1
         self.role_messages[self_id].emojis.append(emoji)
         await self.save_config()
         
         if self.role_messages[self_id].status < len(self.role_messages[self_id].roles):
+            await step_message.clear_reactions()
             embed = discord.Embed(colour=await self.get_colour(channel), description=f"Merci d'ajouter à ce message la réaction que vous voulez pour le rôle {self.role_messages[self_id].roles[self.role_messages[self_id].status].mention}")
             embed.set_footer(text=f'Self ID: {self_id}')
             await step_message.edit(embed=embed)
@@ -122,9 +122,8 @@ class Roles(commands.Cog):
                 return
         except:
             return
-        
         self_message = cast(discord.Message, channel.get_partial_message(embed.footer.text.split(': ')[1]))
-        await self.process_config_step(guild.get_channel(payload.channel_id), payload.emoji, self_message, react_message)
+        await self.process_config_step(channel, payload.emoji, self_message, react_message)
         
     @listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
